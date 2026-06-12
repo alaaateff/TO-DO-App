@@ -1,0 +1,24 @@
+module "eks" {
+    source = "../modules"
+    cidr_block = var.cidr_block
+    pub-sub-count = var.pub-sub-count
+    pub-sub-cidr = var.pub-sub-cidr
+    pub-az = var.pub-az
+    priv-sub-count = var.priv-sub-count
+    priv-sub-cidr = var.priv-sub-cidr
+    priv-az = var.priv-az
+    eks-sg = var.eks-sg
+    cluster-name = var.cluster-name
+    cluster-version = var.cluster-version
+    endpoint-private-access = var.endpoint-private-access
+    endpoint-public-access = var.endpoint-public-access
+    addons = var.addons
+    desired_capacity_on_demand = var.desired_capacity_on_demand
+    min_capacity_on_demand = var.min_capacity_on_demand
+    max_capacity_on_demand = var.max_capacity_on_demand
+    ondemand_instance_types = var.ondemand_instance_types
+    desired_capacity_spot = var.desired_capacity_spot
+    min_capacity_spot = var.min_capacity_spot
+    max_capacity_spot = var.max_capacity_spot
+    spot_instance_types = var.spot_instance_types 
+}

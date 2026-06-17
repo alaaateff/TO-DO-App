@@ -1,10 +1,16 @@
 resource "aws_vpc" "vpc" {
   cidr_block       = var.cidr_block
+  tags = {
+    Name = "eks_vpc"
+  }
 }
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
   depends_on = [aws_vpc.vpc]
+    tags = {
+    Name = "eks_igw"
+  }
 }
 
 resource "aws_subnet" "public-subnet" {
@@ -17,6 +23,8 @@ resource "aws_subnet" "public-subnet" {
   
   tags = {
   "kubernetes.io/role/elb" = "1"
+   Name = "eks__pub_sub_${count.index}"
+   "kubernetes.io/cluster/eks-cluster" = "shared"
 }
 }
 
@@ -28,6 +36,7 @@ resource "aws_subnet" "private-subnet" {
   depends_on = [aws_vpc.vpc]
   tags = {
          "kubernetes.io/role/internal-elb" = "1"
+          Name = "eks__priv_sub_${count.index}"
   }
 }
 
@@ -37,6 +46,9 @@ resource "aws_route_table" "pub-rt" {
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
+  }
+  tags = {
+    Name = "eks_pub_rt"
   }
   depends_on = [aws_vpc.vpc]
 }
@@ -50,6 +62,9 @@ resource "aws_route_table_association" "pub-rt-assoc" {
 
 resource "aws_eip" "ngw-eip" {
   domain   = "vpc"
+    tags = {
+    Name = "eks_eip"
+  }
   depends_on = [aws_vpc.vpc]
 }
 
@@ -57,6 +72,9 @@ resource "aws_nat_gateway" "nat-gw" {
   allocation_id = aws_eip.ngw-eip.id
   subnet_id     = aws_subnet.public-subnet[0].id
   depends_on = [aws_internet_gateway.igw]
+    tags = {
+    Name = "eks_nat"
+  }
 }
 
 resource "aws_route_table" "priv-rt" {
@@ -65,6 +83,9 @@ resource "aws_route_table" "priv-rt" {
   route {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id  = aws_nat_gateway.nat-gw.id
+  }
+    tags = {
+    Name = "eks_priv_rt"
   }
   depends_on = [aws_vpc.vpc]
 }
@@ -80,6 +101,9 @@ resource "aws_security_group" "eks-cluster-sg" {
   name        = var.eks-sg
   description = "Allow 443 from bastion"
   vpc_id      = aws_vpc.vpc.id
+  tags = {
+    Name = "eks_sg"
+  }
   ingress {
     from_port = 443
     to_port = 443

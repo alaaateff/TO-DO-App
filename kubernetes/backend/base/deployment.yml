@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-deployment
+  labels:
+    app: nodejs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+    spec:
+      containers:
+      - name: nodejs
+        image: 214519213041.dkr.ecr.us-east-1.amazonaws.com/backend-repo
+        ports:
+        - containerPort: 3500
+        env:
+        - name: MONGO_CONN_STR
+          valueFrom:
+            configMapKeyRef:
+              name: backend-cm
+              key: MONGO_CONN_STR
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-cm
+              key: PORT              
+        - name: MONGO_USERNAME
+          valueFrom:
+              secretKeyRef:
+                 name: db-secret
+                 key:  username
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

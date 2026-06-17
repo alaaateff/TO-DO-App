@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nodejs
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"

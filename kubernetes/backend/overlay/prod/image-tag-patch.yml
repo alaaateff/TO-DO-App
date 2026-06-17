@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: nodejs
+        image: 214519213041.dkr.ecr.us-east-1.amazonaws.com/backend-repo:prod        

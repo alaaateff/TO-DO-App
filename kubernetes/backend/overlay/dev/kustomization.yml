@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dev
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - replica-patch.yml
+  - image-tag-patch.yml
+  - request-patch.yml
+  - limit-patch.yml

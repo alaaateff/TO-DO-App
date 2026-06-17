@@ -57,10 +57,6 @@ resource "aws_iam_role_policy_attachment" "eks-ebscsi-driver-policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
 
-resource "aws_iam_role" "eks-oidc" {
-  name               = "eks-oidc"
-  assume_role_policy = data.aws_iam_policy_document.eks-oidc-assume_role_policy.json
-}
 resource "aws_iam_role" "ebs_csi_irsa" {
   name               = "ebs_csi_irsa"
   assume_role_policy = data.aws_iam_policy_document.ebs_assume_role.json

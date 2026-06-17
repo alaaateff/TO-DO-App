@@ -39,3 +39,5 @@ variable "desired_capacity_spot" {}
 variable "min_capacity_spot" {}
 variable "max_capacity_spot" {}
 variable "spot_instance_types" {}
+variable "db_username" {}
+variable "db_password" {}

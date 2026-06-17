@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: react
+        image: 214519213041.dkr.ecr.us-east-1.amazonaws.com/frontend-repo:dev

@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb-statefulset
+spec:
+  volumeClaimTemplates:        
+  - metadata:
+      name: data-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]	
+      storageClassName: "storageclass"
+      resources:
+         requests:
+           storage: 3Gi 

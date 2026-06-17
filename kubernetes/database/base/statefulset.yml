@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb-statefulset
+spec:
+  serviceName: "mongodb-service"  
+  replicas: 1                 	
+  selector:
+     matchLabels:
+      app: mongodb 
+  template:
+      metadata:
+        labels:
+         app: mongodb           	
+      spec:
+        containers:
+         - name: mongodb-container
+           image: mongo:8.3     	
+           ports:
+            - containerPort: 27017    	
+           volumeMounts:
+            - name: data-volume
+              mountPath: /data/db    
+           env:
+           - name: MONGO_USERNAME
+             valueFrom:
+                  secretKeyRef:
+                    name: db-secret
+                    key:  username
+           - name: MONGO_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                name: db-secret
+                key: password
+  volumeClaimTemplates:        
+  - metadata:
+      name: data-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]	
+      storageClassName: "storageclass"
+      resources:
+         requests:
+           storage: 1Gi 
+      

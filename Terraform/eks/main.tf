@@ -38,13 +38,13 @@ resource "aws_iam_role" "aws_load_balancer_controller_role" {
         {
             "Effect": "Allow",
             "Principal": {
-                "Federated": "arn:aws:iam::214519213041:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/61C64AECD99B1D7CE27467C58B919F6D"
+                "Federated": "arn:aws:iam::214519213041:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21"
             },
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringEquals": {
-                    "oidc.eks.us-east-1.amazonaws.com/id/61C64AECD99B1D7CE27467C58B919F6D:aud": "sts.amazonaws.com",
-                    "oidc.eks.us-east-1.amazonaws.com/id/61C64AECD99B1D7CE27467C58B919F6D:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
+                    "oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21:aud": "sts.amazonaws.com",
+                    "oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller"
                 }
             }
         }
@@ -130,13 +130,13 @@ resource "aws_iam_role" "external_secret_operator_role" {
         {
             "Effect": "Allow",
             "Principal": {
-                "Federated": "arn:aws:iam::214519213041:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/61C64AECD99B1D7CE27467C58B919F6D"
+                "Federated": "arn:aws:iam::214519213041:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21"
             },
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
                 "StringEquals": {
-                    "oidc.eks.us-east-1.amazonaws.com/id/61C64AECD99B1D7CE27467C58B919F6D:aud": "sts.amazonaws.com",
-                    "oidc.eks.us-east-1.amazonaws.com/id/61C64AECD99B1D7CE27467C58B919F6D:sub": "system:serviceaccount:external-secrets:external-secret-operator"
+                    "oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21:aud": "sts.amazonaws.com",
+                    "oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21:sub": "system:serviceaccount:external-secrets:external-secret-operator"
                 }
             }
         }
@@ -148,3 +148,40 @@ resource "aws_iam_role_policy_attachment" "external_secret_operator_attachement"
   role       = aws_iam_role.external_secret_operator_role.name
   policy_arn = aws_iam_policy.external_secrets_policy.arn
 }
+
+resource "aws_efs_file_system" "efs" {
+  creation_token = "my-efs"
+  encrypted = true
+  tags = {
+    Name = "MyEFS"
+  }
+}
+
+resource "aws_security_group" "efs-sg" {
+  name        = "efs-sg"
+  description = "Allow 2049 from nodes"
+  vpc_id      = module.eks.vpc_id
+  tags = {
+    Name = "efs_sg"
+  }
+  ingress {
+    from_port = 2049
+    to_port = 2049
+    protocol = "tcp"
+    security_groups = [module.eks.eks_node_sg_id]
+    }
+  egress {
+  from_port   = 0
+  to_port     = 0
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+}
+
+resource "aws_efs_mount_target" "efs_mount" {
+  for_each = toset(module.eks.priv_sub_ids)
+  file_system_id = aws_efs_file_system.efs.id
+  subnet_id      = each.value
+  security_groups = [aws_security_group.efs-sg.id]
+}
+

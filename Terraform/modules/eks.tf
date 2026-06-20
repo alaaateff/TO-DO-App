@@ -55,6 +55,10 @@ resource "aws_eks_node_group" "ondemand-node" {
   cluster_name    = aws_eks_cluster.eks.name
   node_group_name = "${var.cluster-name}-on-demand-nodes"
   node_role_arn   = aws_iam_role.eks-nodegroup-iam-role.arn
+  launch_template {
+    id      = aws_launch_template.eks_nodes.id
+    version = "$Latest"
+  }
 
   scaling_config {
     desired_size = var.desired_capacity_on_demand
@@ -83,6 +87,10 @@ resource "aws_eks_node_group" "spot-node" {
   cluster_name    = aws_eks_cluster.eks.name
   node_group_name = "${var.cluster-name}-spot-nodes"
   node_role_arn   = aws_iam_role.eks-nodegroup-iam-role.arn
+  launch_template {
+    id      = aws_launch_template.eks_nodes.id
+    version = "$Latest"
+  }
 
   scaling_config {
     desired_size = var.desired_capacity_spot
@@ -103,7 +111,33 @@ resource "aws_eks_node_group" "spot-node" {
   update_config {
     max_unavailable = 1
   }
-  disk_size = 50 
   depends_on = [aws_eks_cluster.eks]
 
+}
+resource "aws_launch_template" "eks_nodes" {
+  name = "eks-nodes-template"
+
+  vpc_security_group_ids = [
+    aws_security_group.eks_nodes_sg.id,
+    aws_security_group.eks-cluster-sg.id
+  ]
+  block_device_mappings {
+    device_name = "/dev/xvda"
+
+    ebs {
+      volume_size = 50
+      volume_type = "gp3"
+    }
+  }
+}
+
+resource "aws_eks_addon" "efs_csi" {
+  cluster_name  = aws_eks_cluster.eks.name
+  addon_name    = "aws-efs-csi-driver"
+  service_account_role_arn = aws_iam_role.efs_csi_role.arn
+
+  depends_on = [
+    aws_eks_node_group.ondemand-node,
+    aws_eks_node_group.spot-node
+  ]
 }

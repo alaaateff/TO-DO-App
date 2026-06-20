@@ -61,3 +61,38 @@ resource "aws_iam_role" "ebs_csi_irsa" {
   name               = "ebs_csi_irsa"
   assume_role_policy = data.aws_iam_policy_document.ebs_assume_role.json
 }
+
+resource "aws_iam_policy" "efs_csi_policy" {
+  name        = "efs_csi_policy"
+  path        = "/"
+  policy = file("${path.module}/iam-policy-example.json")
+}
+
+resource "aws_iam_role" "efs_csi_role" {
+  name = "efs_csi_role"
+
+  assume_role_policy = jsonencode({
+    "Version":"2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::214519213041:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21:aud": "sts.amazonaws.com",
+                    "oidc.eks.us-east-1.amazonaws.com/id/774F0C35FD8C0AD1D4D9EA408B832E21:sub": "system:serviceaccount:kube-system:efs-csi-controller-sa"
+                }
+            }
+        }
+    ]
+})
+}
+
+resource "aws_iam_role_policy_attachment" "efs_csi_attachement" {
+  role       = aws_iam_role.efs_csi_role.name
+  policy_arn = "arn:aws:iam::214519213041:policy/efs_csi_policy"
+}
+

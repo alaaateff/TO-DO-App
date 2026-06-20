@@ -118,3 +118,31 @@ resource "aws_security_group" "eks-cluster-sg" {
   }
 }
 
+resource "aws_security_group" "eks_nodes_sg" {
+  name   = "eks-nodes-sg"
+  vpc_id = aws_vpc.vpc.id
+  ingress {
+    description     = "Kubelet from EKS control plane"
+    from_port       = 10250
+    to_port         = 10250
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks-cluster-sg.id]
+  }
+  ingress {
+   from_port = 443
+  to_port   = 443
+  protocol  = "tcp"
+
+  security_groups = [
+    aws_security_group.eks-cluster-sg.id
+  ]
+}
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+

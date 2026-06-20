@@ -8,4 +8,5 @@ resources:
     - externalsecret.yml
     - secretstore.yml
     - serviceaccount2.yml
+    - serviceaccount3.yml
 

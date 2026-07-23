@@ -1,5 +1,7 @@
 resource "aws_vpc" "vpc" {
   cidr_block       = var.cidr_block
+  enable_dns_support   = true
+  enable_dns_hostnames = true
   tags = {
     Name = "eks_vpc"
   }
@@ -143,6 +145,19 @@ resource "aws_security_group" "eks_nodes_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+    ingress {
+    from_port       = 9443
+    to_port         = 9443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.eks-cluster-sg.id]
+  }
+  ingress {
+  description = "node-to-node communication"
+  from_port   = 0
+  to_port     = 0
+  protocol    = "-1"
+  self        = true
+}
 }
 
 

@@ -9,4 +9,6 @@ resources:
     - secretstore.yml
     - serviceaccount2.yml
     - serviceaccount3.yml
+    - pvc.yml
+    - storageclass_efs.yml
 
